@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from 'react'
-import { fetchMeals } from '../http'
 import MealItem from './MealItem'
 
 export default function Main(){
     const [meals, setMeals] = useState([])
 
     useEffect(() => {
-        fetch('http://localhost:3000/meals')
-         .then(response => response.json())
-         .then((data) => setMeals(data))
+        async function fetchMeals(){
+            const response = await fetch('http://localhost:3000/meals')
+            if(!response.ok){
+                //...
+            }
+
+            const meals = await response.json()
+            setMeals(meals)
+        }
+        
+        fetchMeals()
     }, [])
 
     return (
         <main id='meals'>
             {meals.map(meal => (
-                <MealItem 
-                    image={meal.image} 
-                    title={meal.name} 
-                    price={meal.price} 
-                    description={meal.description}
-                />
+                <MealItem key={meal.id} meal={meal}/>
             ))}
         </main>
     )
