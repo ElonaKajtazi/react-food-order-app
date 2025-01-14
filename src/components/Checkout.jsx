@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useActionState } from 'react'
 import Modal from '../components/UI/Modal'
 import UserProgressContext from "../store/UserProgressContext"
 import CartContext from "../store/CartContext"
@@ -22,7 +22,6 @@ export default function Checkout(){
     const {
         data, 
         error, 
-        isLoading: isSending, 
         sendRequest, 
         clearData
     } = useHttp('http://localhost:3000/orders', requestConfig)
@@ -39,13 +38,10 @@ export default function Checkout(){
         clearData()
     }
 
-    const handleSubmit = (event) => {
-        event.preventDefault()
-
-       const fd = new FormData(event.target)
+    const checkoutAction = async (prevState, fd) => {
        const customerData = Object.fromEntries(fd.entries())
 
-       sendRequest(JSON.stringify({
+       await sendRequest(JSON.stringify({
             order: {
                 items: cartCtx.items,
                 customer: customerData
@@ -53,6 +49,7 @@ export default function Checkout(){
         }))
     }
 
+    const [formState, formAction, isSending] = useActionState(checkoutAction, null)
     let acions  = (
         <>
             <Button textOnly type='button'>Close</Button>
@@ -79,7 +76,7 @@ export default function Checkout(){
 
     return (
         <Modal open={userProgressCtx.progress === 'checkout'} onClose={handleClose}>
-            <form onSubmit={handleSubmit}>
+            <form action={formAction}>
                 <h2>Checkout</h2>
                 <p>Total Amount: {currencyFormatter.format(cartTotal)} </p>
 
